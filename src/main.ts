@@ -3,6 +3,10 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { AppModule } from './app.module';
 import * as session from 'express-session';
+import * as filestore from 'session-file-store';
+import { stats } from './stats.middleware';
+
+const FileStore = filestore(session);
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
@@ -13,11 +17,13 @@ async function bootstrap() {
   */
   app.use(
     session({
+      store: new FileStore(),
       secret: 'my-secret',
       resave: false,
       saveUninitialized: false,
     }),
   );
+  app.use(stats);
   app.useStaticAssets(join(__dirname, '..', 'public'));
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
   app.setViewEngine('ejs');
